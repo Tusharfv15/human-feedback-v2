@@ -1,0 +1,18 @@
+# Core LangGraph dependencies
+langgraph>=0.2.0
+langchain>=0.2.0
+
+# LangSmith for tracing
+langsmith>=0.1.0
+
+# ML and AI dependencies
+torch>=2.0.0
+
+# Optional: For improved model loading (already in model_manager.py)
+unsloth
+
+# Environment variables
+python-dotenv
+
+# Standard library imports are built-in:
+# json, uuid, typing

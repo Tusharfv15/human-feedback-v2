@@ -1,0 +1,62 @@
+{
+  "program_1": {
+    "task": "Ion implantation of phosphorus (P) for n-type doping in silicon substrate",
+    "sub_htps": [
+      {
+        "task": "Calculate optimal implant energy and dose for desired junction depth and carrier concentration",
+        "table": [
+          {"parameter": "implant_energy", "typical_range": "10-200 keV", "units": "keV"},
+          {"parameter": "dose", "typical_range": "1e13-1e16", "units": "atoms/cm²"},
+          {"parameter": "dose_rate", "typical_range": "1e11-1e13", "units": "atoms/cm²/s"}
+        ],
+        "note": "Energy determines penetration depth, dose determines final concentration"
+      },
+      {
+        "task": "Set up implant conditions including beam current, tilt angle, and rotation",
+        "table": [
+          {"parameter": "beam_current", "typical_range": "0.1-10", "units": "mA"},
+          {"parameter": "tilt_angle", "typical_range": "0-7", "units": "degrees"},
+          {"parameter": "rotation", "typical_range": "continuous", "units": "rpm"}
+        ],
+        "note": "Tilt angle reduces channeling effects"
+      }
+    ]
+  },
+  "program_2": {
+    "task": "Boron (B) implantation for p-type doping with shallow junction formation",
+    "sub_htps": [
+      {
+        "task": "Optimize implant parameters for shallow p+ junctions",
+        "table": [
+          {"parameter": "implant_energy", "typical_range": "5-50 keV", "units": "keV"},
+          {"parameter": "dose", "typical_range": "1e14-1e16", "units": "atoms/cm²"},
+          {"parameter": "substrate_temp", "typical_range": "room temp", "units": "°C"}
+        ],
+        "note": "Lower energy for shallower junctions, higher dose for better activation"
+      },
+      {
+        "task": "Plan annealing schedule for dopant activation and damage repair",
+        "table": [
+          {"parameter": "anneal_temp", "typical_range": "900-1050", "units": "°C"},
+          {"parameter": "anneal_time", "typical_range": "10-60", "units": "seconds"},
+          {"parameter": "ambient", "typical_range": "N2, Ar", "units": "gas"}
+        ],
+        "note": "Rapid thermal annealing (RTA) preferred to minimize diffusion"
+      }
+    ]
+  },
+  "program_3": {
+    "task": "Arsenic (As) high-dose implantation for heavily doped source/drain regions",
+    "sub_htps": [
+      {
+        "task": "Set up high-dose arsenic implant with damage minimization",
+        "table": [
+          {"parameter": "implant_energy", "typical_range": "40-100 keV", "units": "keV"},
+          {"parameter": "dose", "typical_range": "1e15-5e15", "units": "atoms/cm²"},
+          {"parameter": "substrate_temp", "typical_range": "liquid N2 - room temp", "units": "°C"}
+        ],
+        "note": "High dose may cause amorphization; consider preheat or multiple implants"
+      }
+    ]
+  }
+}

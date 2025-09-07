@@ -1,0 +1,77 @@
+def _generate_response(
+        self, prompt: str, max_new_tokens: int = 512, temperature: float = 0.1,system_behavior: str = None
+    ) -> str:
+        """Generate response using the fine-tuned model with proper Alpaca format"""
+        if self.model is None or self.tokenizer is None:
+            # Fallback response for development/testing
+            return (
+                f"[MOCK RESPONSE from {self.agent_name}] Processing: {prompt[:100]}..."
+            )
+
+        try:
+            # Create proper instruction for the agent
+            instruction = f"You are a specialized {self.agent_name.replace('-agent', '')} expert in semiconductor processing. {prompt}"
+        
+        # Create Alpaca format prompt with system behavior
+            alpaca_prompt = self.create_alpaca_prompt(instruction, system_behavior)
+
+            # Tokenize input
+            inputs = self.tokenizer(
+                alpaca_prompt,
+                return_tensors="pt",
+                truncation=True,
+                max_length=1536,  # Leave room for generation
+                padding=False,
+            )
+
+            # Move to correct device
+            device = next(self.model.parameters()).device
+            inputs = {k: v.to(device) for k, v in inputs.items()}
+
+            if hasattr(self.model, 'past_key_values'):
+                self.model.past_key_values = None
+
+            # Generate response with proper parameters
+            with torch.no_grad():
+                outputs = self.model.generate(
+                    **inputs,
+                    max_new_tokens=max_new_tokens,
+                    temperature=temperature,
+                    do_sample=True if temperature > 0 else False,
+                    pad_token_id=self.tokenizer.eos_token_id,
+                    eos_token_id=self.tokenizer.eos_token_id,
+                    repetition_penalty=1.1,
+                    top_p=0.9,
+                    use_cache=False,
+                )
+
+            # Extract only the generated part
+            response = self.tokenizer.decode(
+                outputs[0][inputs["input_ids"].shape[-1] :], skip_special_tokens=True
+            ).strip()
+
+            # Clear GPU cache
+            self._clear_gpu_cache()
+
+            # Debug logging
+            print(
+                f"[DEBUG] {self.agent_name}: Generated response length: {len(response)}"
+            )
+            print(f"[DEBUG] {self.agent_name}: Response preview: {response[:100]}...")
+
+            # Validation
+            if not response or len(response.strip()) < 1:
+                print(
+                    f"[WARNING] {self.agent_name}: Generated response too short, using fallback"
+                )
+                return self._generate_fallback_response(prompt)
+
+            return response
+
+        except Exception as e:
+            print(f"[ERROR] {self.agent_name}: Error generating response: {e}")
+            import traceback
+
+            traceback.print_exc()
+            self._clear_gpu_cache()
+            return self._generate_fallback_response(prompt)
