@@ -1,0 +1,238 @@
+Semiconductor Wafer Processing Knowledge Base
+==========================================
+
+WAFER FUNDAMENTALS
+------------------
+
+Silicon Wafer Properties:
+- Crystal structure: Diamond cubic lattice
+- Standard orientations: (100), (111), (110)
+- Typical sizes: 150mm, 200mm, 300mm, 450mm
+- Resistivity ranges: 0.001-1000 Ω-cm
+- Doping types: n-type (P, As, Sb) and p-type (B, Al, Ga)
+
+Wafer Quality Metrics:
+- Total Thickness Variation (TTV): <5 μm for 300mm wafers
+- Bow and Warp: Critical for lithography and handling
+- Surface roughness: <0.2 nm Ra for device surfaces
+- Defect density: <0.1 defects/cm² for critical applications
+
+
+WAFER CLEANING FUNDAMENTALS
+---------------------------
+
+Contamination Types:
+1. Particulate: Dust, fibers, residues from processing
+2. Organic: Fingerprints, oils, photoresist residues
+3. Ionic: Mobile alkali ions (Na+, K+), heavy metals
+4. Metallic: Fe, Cu, Ni and other transition metals
+
+Standard Cleaning Sequences:
+
+RCA-1 (Standard Clean 1):
+- NH4OH:H2O2:H2O = 1:1:5 at 70-80°C
+- Removes organic contamination and particles
+- Forms thin oxide layer (1-2 nm)
+- Time: 10-15 minutes typical
+
+RCA-2 (Standard Clean 2):
+- HCl:H2O2:H2O = 1:1:6 at 75-85°C
+- Removes metallic contamination
+- Thins oxide layer slightly
+- Time: 10-15 minutes typical
+
+HF Last Clean:
+- Dilute HF (1-10%) removes native oxide
+- Creates hydrogen-terminated surface
+- Critical for epitaxy and high-k dielectric deposition
+- Must minimize exposure to atmosphere after cleaning
+
+
+THERMAL PROCESSING
+------------------
+
+Oxidation Mechanisms:
+- Dry oxidation: Si + O2 → SiO2 (slow, high quality)
+- Wet oxidation: Si + 2H2O → SiO2 + 2H2 (fast, lower density)
+- Growth follows Deal-Grove model: parabolic kinetics
+
+Oxidation Applications:
+- Gate oxides: 1-10 nm, requires dry oxidation
+- Field oxides: 100-1000 nm, wet oxidation acceptable
+- Masking oxides: 50-500 nm for implant or etch masking
+- Sacrificial oxides: Grown and stripped to improve surface quality
+
+Annealing Processes:
+- Rapid Thermal Processing (RTP): 1-100 seconds at high temperature
+- Furnace annealing: Hours at moderate temperature
+- Flash annealing: Millisecond timescales for advanced nodes
+- Applications: Dopant activation, damage repair, stress relief
+
+
+THIN FILM DEPOSITION
+--------------------
+
+Chemical Vapor Deposition (CVD):
+
+LPCVD (Low Pressure CVD):
+- Pressure: 0.1-10 Torr
+- Temperature: 400-900°C
+- Excellent uniformity and conformality
+- Common films: Si3N4, polysilicon, SiO2
+
+PECVD (Plasma Enhanced CVD):
+- Lower temperature: 200-500°C
+- RF plasma enhances reactions
+- Good gap-fill properties
+- Films: SiO2, Si3N4, SiC, a-Si
+
+Physical Vapor Deposition (PVD):
+
+Sputtering:
+- Ar+ ions sputter target material
+- Excellent adhesion and purity
+- Metals: Al, Cu, Ti, TiN, W
+- DC or RF power depending on conductivity
+
+Evaporation:
+- Thermal or e-beam heating
+- Line-of-sight deposition
+- Good for lift-off processes
+- Limited conformality on steps
+
+
+CHEMICAL MECHANICAL POLISHING (CMP)
+-----------------------------------
+
+CMP Fundamentals:
+- Combines chemical and mechanical action
+- Removes material and planarizes surfaces
+- Critical for multilevel metallization
+- Typical removal rates: 100-1000 Å/min
+
+Slurry Components:
+- Abrasive particles: SiO2, Al2O3, CeO2
+- Chemical agents: pH adjusters, oxidizers, complexing agents
+- Additives: Surfactants, corrosion inhibitors
+
+Process Control:
+- Down force: Pressure between wafer and pad
+- Relative velocity: Wafer and platen rotation speeds
+- Slurry flow rate: Maintains fresh chemistry
+- Temperature: Affects chemical reaction rates
+
+Applications:
+- Inter-layer dielectric (ILD) planarization
+- Metal damascene processes
+- Shallow trench isolation (STI)
+- Through-silicon via (TSV) reveal
+
+
+WAFER-LEVEL PACKAGING
+--------------------
+
+Backside Processing:
+- Grinding: Reduce wafer thickness (50-200 μm typical)
+- Stress relief: Anneal to reduce grinding damage
+- Polishing: Achieve required surface finish
+- Backside metallization: For die attach or electrical contact
+
+Dicing and Singulation:
+- Blade dicing: Mechanical cutting with diamond blade
+- Laser dicing: Thermal or ablative cutting
+- Plasma dicing: Chemical etching through streets
+- Stealth dicing: Laser modification + mechanical cleaving
+
+Die Attach Considerations:
+- Thermal management: High thermal conductivity paths
+- Electrical connectivity: Wire bonding or flip-chip
+- Mechanical stress: CTE matching between materials
+- Reliability: Thermal cycling and aging effects
+
+
+PROCESS INTEGRATION CONSIDERATIONS
+----------------------------------
+
+Thermal Budget Management:
+- Cumulative thermal exposure affects dopant profiles
+- Earlier high-temperature steps before sensitive structures
+- Low-temperature alternatives for backend processing
+- RTP reduces thermal budget compared to furnace processing
+
+Contamination Control:
+- Particle control: Cleanroom protocols, HEPA filtration
+- Metallic contamination: Dedicated tools, gettering
+- Organic contamination: Solvent cleaning, UV/ozone treatment
+- Cross-contamination: Tool dedication, cleaning protocols
+
+Sequential Processing Effects:
+- Film stress: Tensile vs. compressive, affects device performance
+- Interface quality: Native oxide removal, surface preparation
+- Pattern dependencies: Loading effects, proximity effects
+- Yield considerations: Cumulative defect generation
+
+
+ADVANCED WAFER TECHNOLOGIES
+---------------------------
+
+Silicon-on-Insulator (SOI):
+- Buried oxide isolation reduces parasitic capacitance
+- Smart-Cut™ process: H+ implant and thermal treatment
+- SIMOX: High-dose oxygen implant and annealing
+- Applications: Low power devices, radiation hardening
+
+Strained Silicon:
+- SiGe buffer layers create compressive/tensile strain
+- Enhances carrier mobility and device performance
+- Process complexity: Defect management, thermal stability
+- Integration challenges: CMP, selective etching
+
+3D Integration:
+- Through-silicon vias (TSVs) for vertical interconnect
+- Wafer thinning and handling challenges
+- Thermal management in stacked structures
+- Test and known-good-die (KGD) requirements
+
+
+METROLOGY AND CHARACTERIZATION
+------------------------------
+
+Thickness Measurements:
+- Ellipsometry: Optical technique for thin films
+- Profilometry: Mechanical stylus or optical
+- XRR (X-ray Reflectometry): Density and thickness
+- Cross-sectional SEM: Direct measurement with preparation
+
+Surface Analysis:
+- AFM (Atomic Force Microscopy): Topography and roughness
+- XPS (X-ray Photoelectron Spectroscopy): Chemical composition
+- SIMS (Secondary Ion Mass Spectrometry): Depth profiling
+- AES (Auger Electron Spectroscopy): Surface composition
+
+Electrical Characterization:
+- Sheet resistance: Four-point probe, non-contact eddy current
+- C-V measurements: Capacitance-voltage for dopant profiles
+- I-V testing: Leakage and breakdown measurements
+- Hall effect: Carrier concentration and mobility
+
+
+YIELD AND RELIABILITY CONSIDERATIONS
+------------------------------------
+
+Defect Sources:
+- Process-induced: Particles, scratches, residues
+- Material-related: Crystal defects, contamination
+- Tool-related: Chamber conditioning, maintenance
+- Handling-related: Wafer transport, storage
+
+Yield Enhancement:
+- Statistical process control (SPC)
+- Designed experiments (DOE) for optimization
+- Inline monitoring and feedback control
+- Defect source identification and elimination
+
+Reliability Physics:
+- Stress testing: Thermal, electrical, mechanical
+- Failure mechanisms: Electromigration, time-dependent dielectric breakdown
+- Accelerated testing: Arrhenius models for lifetime prediction
+- Package-level effects: Moisture, thermal cycling

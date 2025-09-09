@@ -26,21 +26,22 @@ class DopingState(TypedDict):
     iteration_count: int
     final_parameters: Dict[str, Any]
     change_summary: List[str]
+    previous_solution: str  # New: stores the last generated solution
 
 
 class DopingAgent:
     """Single agent that handles doping queries and feedback"""
-    
+
     def __init__(self):
         self.model, self.tokenizer = model_manager.get_model()
         self.programs = self._load_programs()
         self.agent_name = "doping-agent"
-        
+
     def _load_programs(self) -> Dict[str, Any]:
         """Load doping programs from JSON file"""
         with open('programs/doping-programs.json', 'r') as f:
             return json.load(f)
-    
+
     def create_alpaca_prompt(self, instruction: str, system_behavior: str = None) -> str:
         """Create Alpaca format prompt for the finetuned model"""
         if system_behavior:
@@ -63,22 +64,22 @@ class DopingAgent:
 ### Response:
 """
         return prompt
-    
+
     def _clear_gpu_cache(self):
         """Clear GPU cache to prevent memory issues"""
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
-    
+
     def _generate_fallback_response(self, prompt: str) -> str:
         """Generate fallback response when LLM fails"""
         return f"[FALLBACK] Unable to process: {prompt[:100]}..."
-    
+
     @traceable(run_type="tool", name="LLM Program Search")
     def _llm_program_search(self, query: str) -> Dict[str, Any]:
         """Find the most relevant doping program using the finetuned LLM"""
         if self.model is None or self.tokenizer is None:
             return list(self.programs.values())[0]
-        
+
         try:
             # Create instruction for program selection
             program_list = ""
@@ -86,12 +87,12 @@ class DopingAgent:
                 program_list += f"\n{program_id}: {program_data['task']}\n"
                 for sub_htp in program_data.get('sub_htps', []):
                     program_list += f"  - {sub_htp['task']}\n"
-            
+
             instruction = f"You are a specialized doping expert in semiconductor processing. Select the most relevant doping program for the given query. Respond with only the program_id (e.g., 'program_1', 'program_2', or 'program_3').\n\nAvailable Programs:{program_list}"
-            
+
             # Create Alpaca format prompt
             alpaca_prompt = self.create_alpaca_prompt(instruction, query)
-            
+
             # Tokenize input
             inputs = self.tokenizer(
                 alpaca_prompt,
@@ -100,14 +101,14 @@ class DopingAgent:
                 max_length=1536,
                 padding=False,
             )
-            
+
             # Move to correct device
             device = next(self.model.parameters()).device
             inputs = {k: v.to(device) for k, v in inputs.items()}
-            
+
             if hasattr(self.model, 'past_key_values'):
                 self.model.past_key_values = None
-            
+
             # Generate response
             with torch.no_grad():
                 outputs = self.model.generate(
@@ -120,15 +121,16 @@ class DopingAgent:
                     repetition_penalty=1.1,
                     use_cache=False,
                 )
-            
+
             # Extract only the generated part
             response = self.tokenizer.decode(
-                outputs[0][inputs["input_ids"].shape[-1]:], skip_special_tokens=True
+                outputs[0][inputs["input_ids"].shape[-1]
+                    :], skip_special_tokens=True
             ).strip()
-            
+
             # Clear GPU cache
             self._clear_gpu_cache()
-            
+
             # Extract program_id from response
             if response in self.programs:
                 return self.programs[response]
@@ -137,21 +139,21 @@ class DopingAgent:
                 for program_id in self.programs.keys():
                     if program_id in response.lower():
                         return self.programs[program_id]
-                
+
                 # Final fallback to first program
                 return list(self.programs.values())[0]
-                
+
         except Exception as e:
             print(f"[ERROR] {self.agent_name}: Error in program search: {e}")
             self._clear_gpu_cache()
             return list(self.programs.values())[0]
-    
+
     @traceable(run_type="llm", name="Generate Doping Solution")
-    def _generate_solution(self, query: str, program: Dict[str, Any], feedback: str = None) -> str:
+    def _generate_solution(self, query: str, program: Dict[str, Any], feedback: str = None, previous_solution: str = None) -> str:
         """Generate solution using the finetuned LLM with proper Alpaca format"""
         if self.model is None or self.tokenizer is None:
             return f"[MOCK RESPONSE from {self.agent_name}] Processing: {query[:100]}..."
-        
+
         try:
             # Create instruction for parameter generation
             program_details = f"Program: {program['task']}\n\nAvailable parameters and ranges:\n"
@@ -161,17 +163,21 @@ class DopingAgent:
                     program_details += f"- {param['parameter']}: {param['typical_range']} {param['units']}\n"
                 if 'note' in sub_htp:
                     program_details += f"Note: {sub_htp['note']}\n"
-            
+
             instruction = f"You are a specialized doping expert in semiconductor processing. Based on the program data provided, give specific parameter recommendations with explanations.\n\n{program_details}\n\nProvide specific parameter values with explanations:"
-            
-            # Combine query and feedback as input
+
+            # Combine query, previous solution, and feedback as input
             user_input = f"User Query: {query}"
-            if feedback:
+
+            if previous_solution and feedback:
+                user_input += f"\n\nPrevious Solution:\n{previous_solution}"
+                user_input += f"\n\nUser Feedback: {feedback}\nPlease modify the previous solution based on the feedback."
+            elif feedback:
                 user_input += f"\n\nUser Feedback: {feedback}\nPlease adjust the recommendations based on the feedback."
-            
+
             # Create Alpaca format prompt
             alpaca_prompt = self.create_alpaca_prompt(instruction, user_input)
-            
+
             # Tokenize input
             inputs = self.tokenizer(
                 alpaca_prompt,
@@ -180,14 +186,14 @@ class DopingAgent:
                 max_length=1536,
                 padding=False,
             )
-            
+
             # Move to correct device
             device = next(self.model.parameters()).device
             inputs = {k: v.to(device) for k, v in inputs.items()}
-            
+
             if hasattr(self.model, 'past_key_values'):
                 self.model.past_key_values = None
-            
+
             # Generate response with proper parameters
             with torch.no_grad():
                 outputs = self.model.generate(
@@ -201,26 +207,30 @@ class DopingAgent:
                     top_p=0.9,
                     use_cache=False,
                 )
-            
+
             # Extract only the generated part
             response = self.tokenizer.decode(
-                outputs[0][inputs["input_ids"].shape[-1]:], skip_special_tokens=True
+                outputs[0][inputs["input_ids"].shape[-1]
+                    :], skip_special_tokens=True
             ).strip()
-            
+
             # Clear GPU cache
             self._clear_gpu_cache()
-            
+
             # Debug logging
-            print(f"[DEBUG] {self.agent_name}: Generated response length: {len(response)}")
-            print(f"[DEBUG] {self.agent_name}: Response preview: {response[:100]}...")
-            
+            print(
+                f"[DEBUG] {self.agent_name}: Generated response length: {len(response)}")
+            print(
+                f"[DEBUG] {self.agent_name}: Response preview: {response[:100]}...")
+
             # Validation
             if not response or len(response.strip()) < 1:
-                print(f"[WARNING] {self.agent_name}: Generated response too short, using fallback")
+                print(
+                    f"[WARNING] {self.agent_name}: Generated response too short, using fallback")
                 return self._generate_fallback_response(query)
-            
+
             return response
-            
+
         except Exception as e:
             print(f"[ERROR] {self.agent_name}: Error generating response: {e}")
             import traceback
@@ -231,7 +241,7 @@ class DopingAgent:
 
 @traceable(run_type="chain", name="Doping Agent Node")
 def doping_agent_node(state: DopingState) -> DopingState:
-    """Main doping agent node that processes queries and generates solutions"""
+      """Main doping agent node that processes queries and generates solutions"""
     agent = DopingAgent()
     
     # Step 1: LLM-based program search for relevant program
@@ -239,16 +249,20 @@ def doping_agent_node(state: DopingState) -> DopingState:
         selected_program = agent._llm_program_search(state['user_query'])
         state['selected_program'] = selected_program
     
-    # Step 2: Generate solution using LLM
+    # Step 2: Get previous solution BEFORE generating new one
     feedback = state.get('feedback', '')
+    previous_solution = state.get('llm_solution', '')  # Get the last generated solution
+    
+    # Step 3: Generate new solution
     solution = agent._generate_solution(
         state['user_query'], 
         state['selected_program'], 
-        feedback
+        feedback,
+        previous_solution  # This will be empty on first run, populated on subsequent runs
     )
     
-    # Update state
-    state['llm_solution'] = solution
+    # Step 4: Update state
+    state['llm_solution'] = solution  # Store new solution
     state['iteration_count'] = state.get('iteration_count', 0) + 1
     
     # Parse parameters from solution (simplified)
