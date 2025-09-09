@@ -139,7 +139,7 @@ class UnslothAlignPropConfig(AlignPropConfig):
     
     def __init__(
         self,
-        exp_name = 'multi_agent_workflow',
+        exp_name = 'streamlit_interface',
         run_name = '',
         seed = 3407,
         log_with = None,
