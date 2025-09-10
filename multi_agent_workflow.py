@@ -97,6 +97,204 @@ class BaseAgent:
         """Generate fallback response when LLM fails"""
         return f"[FALLBACK] {self.agent_name}: Unable to process: {prompt[:100]}..."
 
+    def _create_program_from_knowledge(self, query: str) -> Dict[str, Any]:
+        """Create a new program based on knowledge base and user query"""
+        if self.model is None or self.tokenizer is None:
+            return None
+        
+        try:
+            knowledge = self._load_knowledge()
+            if not knowledge:
+                return None
+
+            # Create instruction to generate program structure from knowledge
+            instruction = f"""You are a specialized {self.agent_name.replace('-agent', '')} expert. Based on the provided knowledge base and user query, create a structured program with specific parameters and ranges.
+
+Your response must be in valid JSON format following this exact structure:
+{{
+  "task": "Brief description of the main task",
+  "sub_htps": [
+    {{
+      "task": "Specific subtask description",
+      "table": [
+        {{"parameter": "parameter_name", "typical_range": "range_value", "units": "unit_type"}}
+      ],
+      "note": "Important note about this subtask"
+    }}
+  ]
+}}
+
+Extract relevant parameters, typical ranges, and units from the knowledge base. Focus on the most important parameters for the user's specific query.
+
+Knowledge Base:
+{knowledge[:2000]}"""
+
+            user_input = f"User Query: {query}\n\nCreate a program structure with specific parameters that addresses this query."
+
+            alpaca_prompt = self.create_alpaca_prompt(instruction, user_input)
+
+            inputs = self.tokenizer(
+                alpaca_prompt,
+                return_tensors="pt",
+                truncation=True,
+                max_length=1536,
+                padding=False,
+            )
+
+            device = next(self.model.parameters()).device
+            inputs = {k: v.to(device) for k, v in inputs.items()}
+
+            if hasattr(self.model, 'past_key_values'):
+                self.model.past_key_values = None
+
+            with torch.no_grad():
+                outputs = self.model.generate(
+                    **inputs,
+                    max_new_tokens=512,
+                    temperature=0.3,
+                    do_sample=True,
+                    pad_token_id=self.tokenizer.eos_token_id,
+                    eos_token_id=self.tokenizer.eos_token_id,
+                    repetition_penalty=1.1,
+                    top_p=0.9,
+                    use_cache=False,
+                )
+
+            response = self.tokenizer.decode(
+                outputs[0][inputs["input_ids"].shape[-1]:], skip_special_tokens=True
+            ).strip()
+
+            self._clear_gpu_cache()
+
+            # Try to parse JSON response
+            try:
+                # Clean up response - look for JSON block
+                start_idx = response.find('{')
+                end_idx = response.rfind('}') + 1
+                if start_idx != -1 and end_idx > start_idx:
+                    json_str = response[start_idx:end_idx]
+                    program_structure = json.loads(json_str)
+                    print(f"[INFO] {self.agent_name}: Successfully created program structure from knowledge")
+                    return program_structure
+                else:
+                    print(f"[WARNING] {self.agent_name}: Could not find JSON in response")
+                    return None
+            except json.JSONDecodeError as e:
+                print(f"[ERROR] {self.agent_name}: Failed to parse JSON program structure: {e}")
+                print(f"[DEBUG] Response was: {response[:500]}...")
+                return None
+
+        except Exception as e:
+            print(f"[ERROR] {self.agent_name}: Error creating program from knowledge: {e}")
+            self._clear_gpu_cache()
+            return None
+
+    def _create_program_direct(self, query: str) -> Dict[str, Any]:
+        """Create a new program directly from query without using knowledge base"""
+        if self.model is None or self.tokenizer is None:
+            return {}
+        
+        try:
+            # Create instruction for direct program generation
+            instruction = f"""You are a specialized {self.agent_name.replace('-agent', '')} expert in semiconductor processing. Based on your expertise and the user query, create a structured program with specific parameters and ranges.
+
+Your response must be in valid JSON format following this exact structure:
+{{
+  "task": "Brief description of the main task",
+  "sub_htps": [
+    {{
+      "task": "Specific subtask description",
+      "table": [
+        {{"parameter": "parameter_name", "typical_range": "range_value", "units": "unit_type"}}
+      ],
+      "note": "Important note about this subtask"
+    }}
+  ]
+}}
+
+Use your semiconductor processing expertise to define relevant parameters, realistic ranges, and appropriate units. Focus on the most critical parameters for the user's specific process."""
+
+            user_input = f"User Query: {query}\n\nCreate a comprehensive program structure that addresses this specific process requirement."
+
+            alpaca_prompt = self.create_alpaca_prompt(instruction, user_input)
+
+            inputs = self.tokenizer(
+                alpaca_prompt,
+                return_tensors="pt",
+                truncation=True,
+                max_length=1536,
+                padding=False,
+            )
+
+            device = next(self.model.parameters()).device
+            inputs = {k: v.to(device) for k, v in inputs.items()}
+
+            if hasattr(self.model, 'past_key_values'):
+                self.model.past_key_values = None
+
+            with torch.no_grad():
+                outputs = self.model.generate(
+                    **inputs,
+                    max_new_tokens=512,
+                    temperature=0.3,
+                    do_sample=True,
+                    pad_token_id=self.tokenizer.eos_token_id,
+                    eos_token_id=self.tokenizer.eos_token_id,
+                    repetition_penalty=1.1,
+                    top_p=0.9,
+                    use_cache=False,
+                )
+
+            response = self.tokenizer.decode(
+                outputs[0][inputs["input_ids"].shape[-1]:], skip_special_tokens=True
+            ).strip()
+
+            self._clear_gpu_cache()
+
+            # Try to parse JSON response
+            try:
+                # Clean up response - look for JSON block
+                start_idx = response.find('{')
+                end_idx = response.rfind('}') + 1
+                if start_idx != -1 and end_idx > start_idx:
+                    json_str = response[start_idx:end_idx]
+                    program_structure = json.loads(json_str)
+                    print(f"[INFO] {self.agent_name}: Successfully created program structure via direct generation")
+                    return program_structure
+                else:
+                    print(f"[WARNING] {self.agent_name}: Could not find JSON in direct generation response")
+                    return {}
+            except json.JSONDecodeError as e:
+                print(f"[ERROR] {self.agent_name}: Failed to parse JSON from direct generation: {e}")
+                print(f"[DEBUG] Response was: {response[:500]}...")
+                return {}
+
+        except Exception as e:
+            print(f"[ERROR] {self.agent_name}: Error in direct program generation: {e}")
+            self._clear_gpu_cache()
+            return {}
+
+    def _save_program_to_file(self, program_structure: Dict[str, Any], query: str) -> str:
+        """Save the newly created program to programs file and return program_id"""
+        try:
+            # Generate unique program ID
+            existing_programs = len(self.programs)
+            new_program_id = f"program_{existing_programs + 1}"
+            
+            # Add the new program to existing programs
+            self.programs[new_program_id] = program_structure
+            
+            # Save updated programs to file
+            with open(self.programs_file, 'w') as f:
+                json.dump(self.programs, f, indent=2)
+            
+            print(f"[INFO] {self.agent_name}: Saved new program '{new_program_id}' to {self.programs_file}")
+            return new_program_id
+            
+        except Exception as e:
+            print(f"[ERROR] {self.agent_name}: Failed to save program to file: {e}")
+            return ""
+
     @traceable(run_type="tool")
     def find_relevant_program(self, query: str) -> Dict[str, Any]:
         """Find the most relevant program using the finetuned LLM"""
@@ -110,7 +308,7 @@ class BaseAgent:
                 for sub_htp in program_data.get('sub_htps', []):
                     program_list += f"  - {sub_htp['task']}\n"
 
-            instruction = f"You are a specialized {self.agent_name.replace('-agent', '')} expert in semiconductor processing. Analyze the query and determine if any of the available programs could be helpful for this task.\n\nIf you find a relevant program that could be useful (even if not a perfect match), respond with ONLY the program_id (e.g., 'program_1', 'program_2', etc.).\nIf NO program is relevant or could be adapted for this query, respond with EXACTLY: 'NONE'\n\nExamples:\nQuery: I need boron implantation for shallow junctions\nResponse: program_2\n\nQuery: I need to measure wafer thickness\nResponse: NONE\n\nSelect the most suitable program if available, but use 'NONE' only when programs are clearly not applicable.\n\nAvailable Programs:{program_list}"
+            instruction = f"You are a specialized {self.agent_name.replace('-agent', '')} expert. You must be EXTREMELY strict in matching programs to queries.\n\nONLY select a program if the query asks for THE EXACT SAME process described in the program task. The process, materials, and objectives must match precisely.\n\nIf there are ANY differences in:\n- Specific materials or chemicals mentioned\n- Process objectives or applications\n- Technical approach or methodology\n- Equipment or conditions\n\nThen respond with EXACTLY: 'NONE'\n\nOnly respond with a program_id if the query is asking for the identical process already defined in the programs.\n\nIf you find an EXACT match, respond with ONLY the program_id (e.g., 'program_1').\nIf NO program is an EXACT match, respond with EXACTLY: 'NONE'\n\nBe extremely conservative - when in doubt, choose 'NONE'.\n\nAvailable Programs:{program_list}"
 
             alpaca_prompt = self.create_alpaca_prompt(instruction, query)
 
@@ -146,11 +344,31 @@ class BaseAgent:
             self._clear_gpu_cache()
 
             # Extract program_id from response
-            if response.upper() == "NONE":
-                # No relevant program found, return empty dict to trigger knowledge base usage
-                print(
-                    f"[INFO] {self.agent_name}: No relevant program found, will use knowledge base")
-                return {}
+            if response.upper() == "NONE" or "NONE" in response.upper():
+                # No relevant program found, create new program from knowledge base
+                print(f"[INFO] {self.agent_name}: No relevant program found, creating new program from knowledge")
+                new_program = self._create_program_from_knowledge(query)
+                if new_program is not None:
+                    program_id = self._save_program_to_file(new_program, query)
+                    if program_id:
+                        print(f"[INFO] {self.agent_name}: Successfully created and saved new program: {program_id}")
+                    else:
+                        print(f"[WARNING] {self.agent_name}: Created program but failed to save to disk - using it anyway")
+                    return new_program  # Use the generated program regardless of save success
+                else:
+                    print(f"[WARNING] {self.agent_name}: Failed to create program structure from knowledge, trying direct generation")
+                    # Try direct generation without knowledge base
+                    direct_program = self._create_program_direct(query)
+                    if direct_program:
+                        program_id = self._save_program_to_file(direct_program, query)
+                        if program_id:
+                            print(f"[INFO] {self.agent_name}: Successfully created and saved program via direct generation: {program_id}")
+                        else:
+                            print(f"[WARNING] {self.agent_name}: Created program but failed to save to disk - using it anyway")
+                        return direct_program  # Use the generated program regardless of save success
+                    else:
+                        print(f"[WARNING] {self.agent_name}: All program creation methods failed, will use knowledge base in generate_solution")
+                        return {}
             elif response in self.programs:
                 return self.programs[response]
             else:
@@ -158,10 +376,30 @@ class BaseAgent:
                 for program_id in self.programs.keys():
                     if program_id in response.lower():
                         return self.programs[program_id]
-                # If still no match found, treat as NONE
-                print(
-                    f"[INFO] {self.agent_name}: Could not parse program selection '{response}', will use knowledge base")
-                return {}
+                # If still no match found, create new program from knowledge base
+                print(f"[INFO] {self.agent_name}: Could not parse program selection '{response}', creating new program from knowledge")
+                new_program = self._create_program_from_knowledge(query)
+                if new_program is not None:
+                    program_id = self._save_program_to_file(new_program, query)
+                    if program_id:
+                        print(f"[INFO] {self.agent_name}: Successfully created and saved new program: {program_id}")
+                    else:
+                        print(f"[WARNING] {self.agent_name}: Created program but failed to save to disk - using it anyway")
+                    return new_program  # Use the generated program regardless of save success
+                else:
+                    print(f"[WARNING] {self.agent_name}: Failed to create program structure from knowledge, trying direct generation")
+                    # Try direct generation without knowledge base
+                    direct_program = self._create_program_direct(query)
+                    if direct_program:
+                        program_id = self._save_program_to_file(direct_program, query)
+                        if program_id:
+                            print(f"[INFO] {self.agent_name}: Successfully created and saved program via direct generation: {program_id}")
+                        else:
+                            print(f"[WARNING] {self.agent_name}: Created program but failed to save to disk - using it anyway")
+                        return direct_program  # Use the generated program regardless of save success
+                    else:
+                        print(f"[WARNING] {self.agent_name}: All program creation methods failed, will use knowledge base in generate_solution")
+                        return {}
 
         except Exception as e:
             print(f"[ERROR] {self.agent_name}: Error in program search: {e}")
@@ -192,7 +430,28 @@ class BaseAgent:
                     if 'note' in sub_htp:
                         program_details += f"Note: {sub_htp['note']}\n"
 
-            instruction = f"You are a specialized {self.agent_name.replace('-agent', '')} expert in semiconductor processing. Based on the program data or knowledge provided, give specific parameter recommendations with explanations.\n\n{program_details}\n\nProvide specific parameter values with explanations:"
+            instruction = f"""You are a specialized {self.agent_name.replace('-agent', '')} expert in semiconductor processing. Based on the program data or knowledge provided, give specific parameter recommendations with explanations.
+
+Address each sub_htp (sub-task) systematically. Go through each sub_htp listed in the program step-by-step, provide specific parameter values from the given ranges, and explain your reasoning for each sub_htp.
+
+For each sub_htp:
+1. State the sub_htp task clearly
+2. Recommend specific parameter values within the typical ranges provided
+3. Explain why these values are appropriate for the user's query
+4. Note any important considerations or trade-offs
+
+NUMERICAL CALCULATIONS & FORMULATIONS:
+- When the query involves calculations, provide the relevant formulas
+- Show step-by-step numerical calculations with units
+- Explain the physical principles behind the formulations
+- If parameters are interdependent, show how they relate mathematically
+- Include safety margins or process windows in your calculations
+
+Ensure you cover ALL sub_htps in the program comprehensively, including any numerical formulations relevant to each sub_htp.
+
+{program_details}
+
+Provide specific parameter values with explanations and calculations for each sub_htp:"""
 
             user_input = f"User Query: {query}"
 
@@ -207,6 +466,11 @@ class BaseAgent:
                 user_input += f"\n\nUser Feedback: {feedback}\nAnalyze the feedback and implement the specific adjustments requested. Modify the previous solution parameters accordingly and explain how each change addresses the feedback."
                 print(f"[DEBUG] Using previous solution + feedback mode")
                 print(f"[DEBUG] Feedback: '{feedback}'")
+            elif previous_solution:
+                user_input += f"\n\nPrevious Solution:\n{previous_solution}"
+                user_input += f"\nBased on the previous solution and current query, suggest specific changes and improvements. Analyze the existing parameters and recommend optimizations or modifications that would enhance performance, precision, or efficiency."
+                print(f"[DEBUG] Using previous solution refinement mode")
+                print(f"[DEBUG] Refining existing solution based on query")
             elif feedback:
                 user_input += f"\n\nUser Feedback: {feedback}\nImplement the requested parameter adjustments. Provide updated recommendations with specific values and explain how these changes will resolve the issues mentioned in the feedback."
                 print(f"[DEBUG] Using feedback-only mode")

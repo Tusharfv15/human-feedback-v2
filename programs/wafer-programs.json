@@ -5,20 +5,52 @@
       {
         "task": "Standard RCA cleaning sequence for organic and ionic contamination removal",
         "table": [
-          {"parameter": "rca1_temp", "typical_range": "70-80", "units": "°C"},
-          {"parameter": "rca1_time", "typical_range": "10-15", "units": "minutes"},
-          {"parameter": "rca1_nh4oh_conc", "typical_range": "1-5", "units": "%"},
-          {"parameter": "rca1_h2o2_conc", "typical_range": "1-5", "units": "%"}
+          {
+            "parameter": "rca1_temp",
+            "typical_range": "70-80",
+            "units": "\u00c2\u00b0C"
+          },
+          {
+            "parameter": "rca1_time",
+            "typical_range": "10-15",
+            "units": "minutes"
+          },
+          {
+            "parameter": "rca1_nh4oh_conc",
+            "typical_range": "1-5",
+            "units": "%"
+          },
+          {
+            "parameter": "rca1_h2o2_conc",
+            "typical_range": "1-5",
+            "units": "%"
+          }
         ],
         "note": "RCA-1 removes organic contamination and particles; NH4OH:H2O2:H2O ratio typically 1:1:5"
       },
       {
         "task": "Metallic contamination removal using RCA-2 cleaning",
         "table": [
-          {"parameter": "rca2_temp", "typical_range": "75-85", "units": "°C"},
-          {"parameter": "rca2_time", "typical_range": "10-15", "units": "minutes"},
-          {"parameter": "rca2_hcl_conc", "typical_range": "1-5", "units": "%"},
-          {"parameter": "rca2_h2o2_conc", "typical_range": "1-5", "units": "%"}
+          {
+            "parameter": "rca2_temp",
+            "typical_range": "75-85",
+            "units": "\u00c2\u00b0C"
+          },
+          {
+            "parameter": "rca2_time",
+            "typical_range": "10-15",
+            "units": "minutes"
+          },
+          {
+            "parameter": "rca2_hcl_conc",
+            "typical_range": "1-5",
+            "units": "%"
+          },
+          {
+            "parameter": "rca2_h2o2_conc",
+            "typical_range": "1-5",
+            "units": "%"
+          }
         ],
         "note": "RCA-2 removes metallic contamination; HCl:H2O2:H2O ratio typically 1:1:6"
       }
@@ -30,20 +62,52 @@
       {
         "task": "Dry oxidation for high-quality thin gate oxides",
         "table": [
-          {"parameter": "oxidation_temp", "typical_range": "900-1100", "units": "°C"},
-          {"parameter": "o2_flow", "typical_range": "1-5", "units": "slm"},
-          {"parameter": "oxidation_time", "typical_range": "10-120", "units": "minutes"},
-          {"parameter": "target_thickness", "typical_range": "2-50", "units": "nm"}
+          {
+            "parameter": "oxidation_temp",
+            "typical_range": "900-1100",
+            "units": "\u00c2\u00b0C"
+          },
+          {
+            "parameter": "o2_flow",
+            "typical_range": "1-5",
+            "units": "slm"
+          },
+          {
+            "parameter": "oxidation_time",
+            "typical_range": "10-120",
+            "units": "minutes"
+          },
+          {
+            "parameter": "target_thickness",
+            "typical_range": "2-50",
+            "units": "nm"
+          }
         ],
         "note": "Dry oxidation produces denser, higher quality oxide but slower growth rate"
       },
       {
         "task": "Wet oxidation for thick isolation oxides",
         "table": [
-          {"parameter": "oxidation_temp", "typical_range": "900-1100", "units": "°C"},
-          {"parameter": "h2o_flow", "typical_range": "2-10", "units": "slm"},
-          {"parameter": "oxidation_time", "typical_range": "30-300", "units": "minutes"},
-          {"parameter": "target_thickness", "typical_range": "100-1000", "units": "nm"}
+          {
+            "parameter": "oxidation_temp",
+            "typical_range": "900-1100",
+            "units": "\u00c2\u00b0C"
+          },
+          {
+            "parameter": "h2o_flow",
+            "typical_range": "2-10",
+            "units": "slm"
+          },
+          {
+            "parameter": "oxidation_time",
+            "typical_range": "30-300",
+            "units": "minutes"
+          },
+          {
+            "parameter": "target_thickness",
+            "typical_range": "100-1000",
+            "units": "nm"
+          }
         ],
         "note": "Wet oxidation gives faster growth rate but lower density compared to dry oxidation"
       }
@@ -55,21 +119,57 @@
       {
         "task": "LPCVD silicon nitride deposition for passivation and masking",
         "table": [
-          {"parameter": "deposition_temp", "typical_range": "700-800", "units": "°C"},
-          {"parameter": "pressure", "typical_range": "0.1-1.0", "units": "Torr"},
-          {"parameter": "sih2cl2_flow", "typical_range": "20-100", "units": "sccm"},
-          {"parameter": "nh3_flow", "typical_range": "100-500", "units": "sccm"}
+          {
+            "parameter": "deposition_temp",
+            "typical_range": "700-800",
+            "units": "\u00c2\u00b0C"
+          },
+          {
+            "parameter": "pressure",
+            "typical_range": "0.1-1.0",
+            "units": "Torr"
+          },
+          {
+            "parameter": "sih2cl2_flow",
+            "typical_range": "20-100",
+            "units": "sccm"
+          },
+          {
+            "parameter": "nh3_flow",
+            "typical_range": "100-500",
+            "units": "sccm"
+          }
         ],
         "note": "LPCVD provides excellent uniformity and conformality; SiH2Cl2:NH3 ratio affects stress and properties"
       },
       {
         "task": "PECVD oxide deposition for interlayer dielectrics",
         "table": [
-          {"parameter": "deposition_temp", "typical_range": "300-450", "units": "°C"},
-          {"parameter": "rf_power", "typical_range": "20-200", "units": "W"},
-          {"parameter": "pressure", "typical_range": "0.5-2.0", "units": "Torr"},
-          {"parameter": "sih4_flow", "typical_range": "10-50", "units": "sccm"},
-          {"parameter": "n2o_flow", "typical_range": "100-1000", "units": "sccm"}
+          {
+            "parameter": "deposition_temp",
+            "typical_range": "300-450",
+            "units": "\u00c2\u00b0C"
+          },
+          {
+            "parameter": "rf_power",
+            "typical_range": "20-200",
+            "units": "W"
+          },
+          {
+            "parameter": "pressure",
+            "typical_range": "0.5-2.0",
+            "units": "Torr"
+          },
+          {
+            "parameter": "sih4_flow",
+            "typical_range": "10-50",
+            "units": "sccm"
+          },
+          {
+            "parameter": "n2o_flow",
+            "typical_range": "100-1000",
+            "units": "sccm"
+          }
         ],
         "note": "PECVD allows lower temperature processing but may have higher defect density"
       }
@@ -81,22 +181,96 @@
       {
         "task": "Backside grinding and polishing for thickness control",
         "table": [
-          {"parameter": "target_thickness", "typical_range": "50-200", "units": "μm"},
-          {"parameter": "grind_rate", "typical_range": "1-10", "units": "μm/min"},
-          {"parameter": "final_polish_time", "typical_range": "5-30", "units": "minutes"},
-          {"parameter": "surface_roughness", "typical_range": "1-10", "units": "nm Ra"}
+          {
+            "parameter": "target_thickness",
+            "typical_range": "50-200",
+            "units": "\u00ce\u00bcm"
+          },
+          {
+            "parameter": "grind_rate",
+            "typical_range": "1-10",
+            "units": "\u00ce\u00bcm/min"
+          },
+          {
+            "parameter": "final_polish_time",
+            "typical_range": "5-30",
+            "units": "minutes"
+          },
+          {
+            "parameter": "surface_roughness",
+            "typical_range": "1-10",
+            "units": "nm Ra"
+          }
         ],
         "note": "Careful control of final thickness is critical for thermal and mechanical performance"
       },
       {
         "task": "Dicing preparation and die singulation",
         "table": [
-          {"parameter": "dicing_tape_type", "typical_range": "UV/thermal release", "units": "type"},
-          {"parameter": "blade_exposure", "typical_range": "10-50", "units": "μm"},
-          {"parameter": "cutting_speed", "typical_range": "1-10", "units": "mm/s"},
-          {"parameter": "die_attach_area", "typical_range": "calculated", "units": "mm²"}
+          {
+            "parameter": "dicing_tape_type",
+            "typical_range": "UV/thermal release",
+            "units": "type"
+          },
+          {
+            "parameter": "blade_exposure",
+            "typical_range": "10-50",
+            "units": "\u00ce\u00bcm"
+          },
+          {
+            "parameter": "cutting_speed",
+            "typical_range": "1-10",
+            "units": "mm/s"
+          },
+          {
+            "parameter": "die_attach_area",
+            "typical_range": "calculated",
+            "units": "mm\u00c2\u00b2"
+          }
         ],
         "note": "Proper dicing parameters prevent chipping and ensure good die strength"
+      }
+    ]
+  },
+  "program_5": {
+    "task": "Develop a program for Piranha cleaning followed by HF dip",
+    "sub_htps": [
+      {
+        "task": "Determine appropriate Piranha cleaning conditions based on desired end result.",
+        "table": [
+          {
+            "parameter": "Temperature",
+            "typical_range": "70-80 \u00c2\u00b0C",
+            "units": "degree Celsius"
+          },
+          {
+            "parameter": "Concentrations",
+            "typical_range": "NH4OH:H2O2:H2O = 1:1:5",
+            "units": ""
+          },
+          {
+            "parameter": "Time",
+            "typical_range": "10-15 minutes",
+            "units": ""
+          }
+        ],
+        "note": "This combination helps remove organic contaminants while forming a thin oxide layer."
+      },
+      {
+        "task": "Select suitable HF concentration for last clean step.",
+        "table": [
+          {
+            "parameter": "Concentration",
+            "typical_range": "1-10%",
+            "units": ""
+          },
+          {
+            "parameter": "Exposure time",
+            "typical_range": "Short duration (<30 seconds)",
+            "units": ""
+          }
+        ],
+        "note": "Minimize exposure to air between steps to prevent reoxidation."
       }
     ]
   }
